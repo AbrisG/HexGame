@@ -26,61 +26,68 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
     See the specification document for more details.
     """
 
-    # Create a queue
-    queue = []
+    # create a total path list
+    total_path = []
 
-    # Create a generated set
-    generated = set()
+    while len(input.keys()) > 1:
+        # Create a queue
+        queue = []
 
-    # Add all red cells to the queue
-    for key, value in input.items():
-        if value[0] == "r":
-            queue.append(key)
-            start = key
-            generated.add(key)
+        # Create a generated set
+        generated = set()
 
-    # create parent dictionary
-    parents = {}
+        # Add all red cells to the queue
+        for key, value in input.items():
+            if value[0] == "r":
+                queue.append(key)
+                generated.add(key)
 
-    i = 0
+        start = queue[0]
 
-    # While the queue is not empty
-    while len(queue) > 0 or i <= 1:
-        # Get the first element of the queue
-        current = queue.pop(0)
+        # create parent dictionary
+        parents = {}
 
-        if current in input.keys() and input[current][0] == 'b':
-            backtrace(parents, start, current)
-            break
+        # While the queue is not empty
+        while len(queue) > 0:
+            # Get the first element of the queue
+            current = queue.pop(0)
 
-        # Get the 6 neighbors of current cell's neighbours
-        neighbours = [
-            (current[0] + 0, current[1] + 1),
-            (current[0] - 1, current[1] + 1),
-            (current[0] - 1, current[1] + 0),
-            (current[0] + 0, current[1] - 1),
-            (current[0] + 1, current[1] - 1),
-            (current[0] + 1, current[1] + 0)
-        ]
+            if current in input.keys() and input[current][0] == 'b':
+                total_path += backtrace(parents, start, current)
 
-        neighbours = list(map(lambda t: (t[0] % 7, t[1] % 7), neighbours))
-        neighbours = list(filter(lambda t: t not in generated, neighbours))
+                del input[start]
+                input[current] = ('r', input[current][1])
+                break
 
-        # For each neighbour
-        for neighbour in neighbours:
-            parents[neighbour] = current
+            # Get the 6 neighbors of current cell's neighbours
+            neighbours = [
+                (current[0] + 0, current[1] + 1),
+                (current[0] - 1, current[1] + 1),
+                (current[0] - 1, current[1] + 0),
+                (current[0] + 0, current[1] - 1),
+                (current[0] + 1, current[1] - 1),
+                (current[0] + 1, current[1] + 0)
+            ]
 
-        queue += neighbours
-        generated.update(neighbours)
+            neighbours = list(map(lambda t: (t[0] % 7, t[1] % 7), neighbours))
+            neighbours = list(filter(lambda t: t not in generated, neighbours))
 
-        print(queue)
+            # For each neighbour
+            for neighbour in neighbours:
+                parents[neighbour] = current
 
-        i += 1
+            queue += neighbours
+            generated.update(neighbours)
 
     # The render_board function is useful for debugging -- it will print out a
     # board state in a human-readable format. Try changing the ansi argument 
     # to True to see a colour-coded version (if your terminal supports it).
     print(render_board(input, ansi=True))
+
+    # remove duplicate items from the total_path list
+    total_path = list(dict.fromkeys(total_path))
+    
+    print(total_path)
 
     # Here we're returning "hardcoded" actions for the given test.csv file.
     # Of course, you'll need to replace this with an actual solution...
