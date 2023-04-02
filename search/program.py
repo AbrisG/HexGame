@@ -1,9 +1,11 @@
 # COMP30024 Artificial Intelligence, Semester 1 2023
 # Project Part A: Single Player Infexion
-
+import BFS
+from search import a_star
 from utils import render_board
 import numpy as np
 from Node import Node
+import s
 
 direction_list = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, -1), (1, 0)]
 
@@ -60,74 +62,5 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 
     See the specification document for more details.
     """
-    total_path = []
 
-    while len(input.keys()) > 1:
-        queue = []
-        generated = set()
-
-        # Add all red cells to the queue
-        for key, value in input.items():
-            if value[0] == "r":
-                new_node = Node(key, None, 0, -1, -1)
-
-                queue.append(new_node)
-                generated.add(new_node)
-
-        start = queue[0]
-
-        # While the queue is not empty
-        while len(queue) > 0:
-            # Get the element in the queue with the lowest f value and remove it from the queue
-            current = min(queue, key=lambda n: n.f)
-            queue.remove(current)
-
-            if current.coord in input.keys() and input[current.coord][0] == 'b':
-                total_path += backtrace(start, current)
-
-                del input[start.coord]
-                input[current.coord] = ('r', input[current.coord][1])
-                break
-
-            neighbours = []
-
-            for i in range(len(direction_list)):
-                direction = direction_list[i]
-
-                new_coord = ((current.coord[0] + direction[0]) % 7, (current.coord[1] + direction[1]) % 7)
-
-                g = current.g + 1
-                new_node = Node(new_coord, current, g, -1, -1)
-
-                h = calculate_h(new_node, input)
-                new_node.h = h
-                new_node.f = g + h
-
-                if is_node_in_generated(new_node, generated):
-                    continue
-
-                neighbours.append(new_node)
-                generated.add(new_node)
-
-            queue += neighbours
-            generated.update(neighbours)
-
-    # The render_board function is useful for debugging -- it will print out a
-    # board state in a human-readable format. Try changing the ansi argument 
-    # to True to see a colour-coded version (if your terminal supports it).
-    print(render_board(input, ansi=True))
-
-    # remove duplicate items from the total_path list
-    total_path = list(dict.fromkeys(total_path))
-
-    print(total_path)
-
-    # Here we're returning "hardcoded" actions for the given test.csv file.
-    # Of course, you'll need to replace this with an actual solution...
-    return [
-        (5, 6, -1, 1),
-        (3, 1, 0, 1),
-        (3, 2, -1, 1),
-        (1, 4, 0, -1),
-        (1, 3, 0, -1)
-    ]
+    return a_star.A_star(input)

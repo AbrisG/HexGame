@@ -41,7 +41,9 @@ def main():
     Main entry point for program.
     """
     input = parse_input(stdin.read())
+    print(input)
     sequence: list[tuple] = search(input)
+    print(sequence)
     print_sequence(sequence)
 
 if __name__ == "__main__":
