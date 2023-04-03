@@ -20,13 +20,15 @@ class Node:
 
     def get_neighbours(self):
         # Grab all the neighbours according to the offsets and the power (k)
-        neighbours = dict.fromkeys(Node.dr_dq, [])
+        neighbours = {key: [] for key in Node.dr_dq}
         for i in range(1, self.k + 1):
             for (dr, dq) in Node.dr_dq:
                 neighbours[(dr, dq)].append(((self.coord[0] + dr * i) % 7, (self.coord[1] + dq * i) % 7))
         return neighbours
 
     def __eq__(self, other):
+        if not isinstance(other, Node):
+            return False
         return self.coord == other.coord \
             and self.parent == other.parent \
             and self.g == other.g \

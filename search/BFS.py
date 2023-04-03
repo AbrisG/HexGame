@@ -1,5 +1,6 @@
 from Action import Action
 from utils import render_board
+from timeout_decorator import timeout
 
 
 class NodeBFS:
@@ -9,6 +10,23 @@ class NodeBFS:
         self.state = state
         self.k = k
         self.offset = offset
+
+    dr_dq = [
+        (0, 1),  # down-right
+        (-1, 1),  # down
+        (-1, 0),  # down-left
+        (0, -1),  # up-left
+        (1, -1),  # up
+        (1, 0)  # up-right
+    ]
+
+    def get_neighbours(self):
+        # Grab all the neighbours according to the offsets and the power (k)
+        neighbours = {key: [] for key in NodeBFS.dr_dq}
+        for i in range(1, self.k + 1):
+            for (dr, dq) in NodeBFS.dr_dq:
+                neighbours[(dr, dq)].append(((self.coord[0] + dr * i) % 7, (self.coord[1] + dq * i) % 7))
+        return neighbours
 
 
 def generate_path(node):
@@ -46,6 +64,8 @@ def paint_board(node, inp):
             else:
                 inp[new_square] = ('r', 1)
 
+    print(render_board(inp, True))
+
     return actions
 
 
@@ -63,58 +83,67 @@ def get_start(inp):
     return queue, visited, blue_nodes
 
 
+def get_blue_nodes(state):
+    blue_nodes = []
+    for key, value in state.items():
+        if value[0] == 'b':
+            blue_nodes.append(key)
+    return blue_nodes
+
+
+def is_goal_state(state):
+    return len(get_blue_nodes(state)) == 0
+
+
+@timeout(30)
 def BFS(inp):
-    direction_list = [
-        (0, 1),  # down-right
-        (-1, 1),  # down
-        (-1, 0),  # down-left
-        (0, -1),  # up-left
-        (1, -1),  # up
-        (1, 0)  # up-right
-    ]
+    inp = inp.copy()
 
-    queue, visited, blue_nodes = get_start(inp)
-
-    actions = []
+    queue = []
+    visited = []
+    for key in inp.keys():
+        if inp[key][0] == 'r':
+            node = NodeBFS(key, None, inp[key][1], inp, (0, 0))
+            queue.append(node)
+            visited.append(visited)
 
     while len(queue) > 0:
         current = queue.pop(0)
 
-        if current.coord in blue_nodes:
-            # We found a solution, return the path
-            actions += paint_board(current, inp)
-            queue, visited, blue_nodes = get_start(inp)
-            continue
+        neighbours = current.get_neighbours()
 
-        neighbours = []
+        for (dr, dq) in neighbours.keys():
 
-        for i in range(len(direction_list)):
-            direction = direction_list[i]
+            # Grab the state of the prior node
             new_state = current.state.copy()
-            new_coords = []
-            for j in range(1, current.k + 1):
-                new_coord = ((current.coord[0] + direction[0] * j) % 7, (current.coord[1] + direction[1] * j) % 7)
-                if new_coord in new_state.keys():
-                    k = new_state[new_coord][1] + 1
-                else:
-                    k = 1
 
-                new_state[new_coord] = ('r', k)
+            # Modify it to reflect the new node(s)
+            del new_state[current.coord]
 
-                if new_coord in visited:
-                    new_coords = []
+            for (r, q) in neighbours[(dr, dq)]:
+
+                # Calculate and update k
+                k = 1
+                if (r, q) in new_state.keys():
+                    k = new_state[(r, q)][1] + 1
+
+                new_state[(r, q)] = ('r', k)
+
+            nodes_to_add = []
+
+            for (r, q) in neighbours[(dr, dq)]:
+                # Create new node
+                new_node = NodeBFS((r, q), current, new_state[(r, q)][1], new_state, (dr, dq))
+
+                if new_node in visited:
+                    nodes_to_add = []
                     break
-                else:
-                    new_coords.append((new_coord, direction))
+                nodes_to_add.append(new_node)
 
-            neighbours.extend(
-                list(map(lambda x: NodeBFS(x[0], current, new_state[x[0]][1], new_state, x[1]), new_coords)))
+            # Check if goal state
+            if is_goal_state(new_state):
+                actions = paint_board(nodes_to_add[0], inp)
+                return list(map(lambda x: x.to_tuple(), actions))
 
-        queue += neighbours
-        visited += list(map(lambda x: x.coord, neighbours))
-
-    return list(map(lambda x: x.to_tuple(), actions))
-
-
-input = {(1, 4): ('r', 2), (5, 1): ('r', 1), (2, 4): ('b', 2), (1, 1): ('b', 1)}
-BFS(input)
+            queue.extend(nodes_to_add)
+            visited.extend(nodes_to_add)

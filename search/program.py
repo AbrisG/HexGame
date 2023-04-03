@@ -1,7 +1,6 @@
 # COMP30024 Artificial Intelligence, Semester 1 2023
 # Project Part A: Single Player Infexion
-import BFS
-from search import a_star
+import a_star
 from utils import render_board
 import numpy as np
 from Node import Node
