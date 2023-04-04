@@ -1,5 +1,5 @@
-from Action import Action
-from utils import render_board
+from .Action import Action
+from .utils import render_board
 import time
 
 
@@ -73,7 +73,7 @@ def paint_board(node, inp):
             else:
                 inp[new_square] = ('r', 1)
 
-    print(render_board(inp, True))
+    #print(render_board(inp, True))
 
     return actions
 
@@ -92,7 +92,7 @@ def is_goal_state(state):
 
 def run_BFS(inp):
     inp = inp.copy()
-    print(render_board(inp, True))
+    #print(render_board(inp, True))
     #master = inp.copy()
 
     queue = []
@@ -157,14 +157,3 @@ def run_BFS(inp):
             for (r, q) in nodes_to_check:
                 new_node = NodeBFS((r, q), current, new_state[(r, q)][1], new_state, (dr, dq), node_visited)
                 queue.append(new_node)
-
-
-if __name__ == '__main__':
-    input_dict = {(5, 6): ('r', 2), (1, 0): ('b', 2), (1, 1): ('b', 1), (3, 2): ('b', 1), (1, 3): ('b', 3)}
-
-    start = time.time()
-    output = BFS(input_dict)
-    end = time.time()
-
-    print("Time taken: ", end - start)
-    print("Output: ", output)

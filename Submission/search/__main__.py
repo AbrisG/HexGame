@@ -8,7 +8,7 @@ from .program import search
 #          You should be modifying the search function in program.py instead.
 #
 # The code here is used by the autograder to feed your solution input and parse
-# the resulting action sequence. Failed test cases due to modification of this
+# the resulting action sequence. Failed test cases due to modification of this 
 # file will not receive any marks.
 #
 # Notice that output is printed to stdout, and all actions are prepended with
@@ -23,14 +23,14 @@ def parse_input(input: str) -> dict[tuple, tuple]:
     return {
         (int(r), int(q)): (p.strip(), int(k))
         for r, q, p, k in [
-            line.split(',') for line in input.splitlines()
+            line.split(',') for line in input.splitlines() 
             if len(line.strip()) > 0
         ]
     }
 
 def print_sequence(sequence: list[tuple]):
     """
-    Print the given action sequence. All actions are prepended with the
+    Print the given action sequence. All actions are prepended with the 
     word "SPREAD", and each action is printed on a new line.
     """
     for r, q, dr, dq in sequence:

@@ -2,7 +2,7 @@
 # Project Part A: Single Player Infexion
 
 
-from BFS import run_BFS
+from .BFS import run_BFS
 
 
 def search(input: dict[tuple, tuple]) -> list[tuple]:

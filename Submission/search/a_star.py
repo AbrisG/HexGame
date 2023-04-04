@@ -1,8 +1,8 @@
 import time
-from Node import Node
-from HeuristicCalc import h, get_blue_nodes
-from utils import render_board
-from Action import Action
+from .Node import Node
+from .HeuristicCalc import h, get_blue_nodes
+from .utils import render_board
+from .Action import Action
 import heapq
 
 
