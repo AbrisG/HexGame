@@ -5,6 +5,7 @@ def get_blue_nodes(state, coords_only=False):
     else:
         return blue_nodes
 
+
 def axial_distance(a, b):
     return (abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[0] + a[1] - b[0] - b[1])) / 2
 
@@ -42,4 +43,4 @@ def h(coord, k, state, distance_f=axial_distance) -> int:
     distances = list(map(lambda bn: max(distance_f(coord, bn) - k + 1, 0), all_blue_nodes))
 
     # Return the lowest distance
-    return min(distances)
+    return max(0, min(distances))

@@ -51,6 +51,9 @@ if __name__ == '__main__':
         try:
             print(render_board(test, ansi=True))
 
+            start = time.time()
+            
+
             BFS_start_time = time.time()
             BFS_result = BFS(test)
             BFS_end_time = time.time()

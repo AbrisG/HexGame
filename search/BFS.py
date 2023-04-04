@@ -1,6 +1,6 @@
 from Action import Action
 from utils import render_board
-from timeout_decorator import timeout
+import time
 
 
 class NodeBFS:
@@ -89,7 +89,7 @@ def get_blue_nodes(state):
 def is_goal_state(state):
     return len(get_blue_nodes(state)) == 0
 
-@timeout(30)
+
 def BFS(inp):
     inp = inp.copy()
     print(render_board(inp, True))
@@ -105,20 +105,21 @@ def BFS(inp):
     while len(queue) > 0:
         current = queue.pop(0)
 
-        #master.update(current.state)
+        """
+        # Print the board after every move
+        master.update(current.state)
 
-        #root = current
-        #while root.parent is not None:
-           # root = root.parent
+        root = current
+        while root.parent is not None:
+           root = root.parent
 
-        #if current.parent is not None:
-            #master[current.parent.coord] = ('g', current.parent.k)
+        if current.parent is not None:
+            master[current.parent.coord] = ('g', current.parent.k)
 
-        #print(root)
-        #print(render_board(master, True))
+        print(root)
+        print(render_board(master, True))
+        """
 
-
-        # Check if goal state
         if is_goal_state(current.state):
             actions = paint_board(current, inp)
             return list(map(lambda x: x.to_tuple(), actions))
@@ -157,11 +158,13 @@ def BFS(inp):
                 new_node = NodeBFS((r, q), current, new_state[(r, q)][1], new_state, (dr, dq), node_visited)
                 queue.append(new_node)
 
-        #if current.parent is not None:
-         #   master[current.parent.coord] = ('r', current.parent.k)
-
 
 if __name__ == '__main__':
-    input_dict = {(3,1) : ('r', 4), (0,4) : ('b', 6), (5,6) : ('b',1)}
+    input_dict = {(5, 6): ('r', 2), (1, 0): ('b', 2), (1, 1): ('b', 1), (3, 2): ('b', 1), (1, 3): ('b', 3)}
 
-    print(BFS(input_dict))
+    start = time.time()
+    output = BFS(input_dict)
+    end = time.time()
+
+    print("Time taken: ", end - start)
+    print("Output: ", output)

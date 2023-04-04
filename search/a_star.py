@@ -2,29 +2,51 @@ import time
 from Node import Node
 from HeuristicCalc import h, get_blue_nodes
 from utils import render_board
+from Action import Action
+import heapq
 
 
 def is_goal_state(state):
     return len(get_blue_nodes(state)) == 0
 
 
+def path_to_actions(path):
+    actions = []
+    for i in range(len(path) - 1):
+        actions.append(
+            Action(path[i].coord[0], path[i].coord[1], path[i + 1].offset[0], path[i + 1].offset[1], path[i].k))
+    return actions
+
+
+def paint_board(node, state):
+    # Get the path
+    path = []
+    while node is not None:
+        path.append(node)
+        node = node.parent
+    path.reverse()
+
+    actions = path_to_actions(path)
+
+    print(render_board(state, True))
+
+    return actions
+
+
 def A_star(initial_state):
     initial_state = initial_state.copy()
-
     print(render_board(initial_state, True))
 
     queue = []
-    visited = []
 
-    for items in initial_state.items():
-        if items[1][0] == 'r':
-            node = Node(items[0], None, 0, h(items[0], items[1][1], initial_state), items[1][1], (0, 0), initial_state)
-            queue.append(node)
-            visited.append(node)
+    for key in initial_state.keys():
+        if initial_state[key][0] == 'r':
+            node = Node(key, None, initial_state[key][1], initial_state, (0, 0), [key],
+                        0, h(key, initial_state[key][1], initial_state))  # TODO - h()
+            heapq.heappush(queue, node)
 
     while len(queue) > 0:
-        current = min(queue, key=lambda x: x.f)
-        queue.remove(current)
+        current = heapq.heappop(queue)
 
         neighbours = current.get_neighbours()
 
@@ -35,41 +57,35 @@ def A_star(initial_state):
             # Modify it to reflect the new node(s)
             del new_state[current.coord]
 
-            to_remove = []
-
+            nodes_to_check = []
             for (r, q) in neighbours[(dr, dq)]:
                 # Calculate and update k
                 k = 1
                 if (r, q) in new_state.keys():
                     k = new_state[(r, q)][1] + 1
 
-                # Check if k greater than max power, if not add to the state
                 if k > 6:
-                    to_remove.append((r, q))
-                else:
-                    new_state[(r, q)] = ('r', k)
+                    del new_state[(r, q)]
+                    continue
 
-            neighbours[(dr, dq)] = list(filter(lambda x: x not in to_remove, neighbours[(dr, dq)]))
+                if (r, q) in current.visited:
+                    continue
 
-            nodes_to_add = []
+                new_state[(r, q)] = ('r', k)
+                nodes_to_check.append((r, q))
 
-            for (r, q) in neighbours[(dr, dq)]:
-                k = new_state[(r, q)][1]
+            node_visited = current.visited.copy()
+            node_visited.extend(nodes_to_check)
 
-                # Calculate heuristic with the prior state
-                heuristic = h((r, q), k, current.state)
+            for (r, q) in nodes_to_check:
+                if is_goal_state(new_state):
+                    node = Node((r, q), current, new_state[(r,q)][1], new_state, (dr, dq), node_visited, 0, 0)
+                    actions = paint_board(node, new_state)
+                    return list(map(lambda x: x.to_tuple(), actions))
 
-                # Create new node
-                new_node = Node((r, q), current, current.g + 1, heuristic, k, (dr, dq), new_state)
-                nodes_to_add.append(new_node)
-
-            # Check if goal state
-            if is_goal_state(new_state):
-                actions = paint_board(nodes_to_add[0], new_state)
-                return list(map(lambda x: x.to_tuple(), actions))
-
-            queue.extend(nodes_to_add)
-            visited.extend(nodes_to_add)
+                new_node = Node((r, q), current, new_state[(r, q)][1], new_state, (dr, dq), node_visited,
+                                current.g + 1, h((r,q), new_state[(r,q)][1], new_state))  # TODO - h()
+                heapq.heappush(queue, new_node)
 
 
 if __name__ == '__main__':

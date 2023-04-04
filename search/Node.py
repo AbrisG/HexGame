@@ -1,6 +1,5 @@
 class Node:
-    def __init__(self, coord, parent, g, h, k, offset, state):
-        self.coord = coord
+    def __init__(self, coord, parent, k, state, offset, visited, g, h):
         self.parent = parent
         self.g = g
         self.h = h
@@ -8,6 +7,8 @@ class Node:
         self.f = g + h
         self.offset = offset
         self.state = state
+        self.visited = visited
+        self.coord = coord
 
     dr_dq = [
         (0, 1),  # down-right
@@ -33,3 +34,6 @@ class Node:
 
     def __str__(self):
         return f"Node: {self.coord}, g: {self.g}, h: {self.h}, f: {self.f}, k: {self.k}"
+
+    def __lt__(self, other):
+        return self.f < other.f
