@@ -1,5 +1,3 @@
-import time
-
 from Node import Node
 from Action import Action
 from utils import render_board
@@ -52,7 +50,7 @@ def h(coord, k, state, distance_f=axial_distance) -> int:
     all_blue_nodes = get_wraparound_nodes(blue_nodes)
 
     # Calculate the distance to all blue nodes
-    distances = list(map(lambda bn: max(distance_f(coord, bn) - k + 1, 0), all_blue_nodes))
+    distances = list(map(lambda bn: max(distance_f(coord, bn), 0), all_blue_nodes))
 
     # Return the lowest distance
     return min(distances)
@@ -80,79 +78,68 @@ def paint_board(node, state):
 
     return actions
 
-@timeout(120)
-def A_star(initial_state, w_filters=False):
+@timeout(30)
+def A_star(initial_state):
     initial_state = initial_state.copy()
 
-    print(render_board(initial_state, True))
-
     queue = []
-    visited = []
+    g_tracker = {}
 
     for items in initial_state.items():
         if items[1][0] == 'r':
             node = Node(items[0], None, 0, h(items[0], items[1][1], initial_state), items[1][1], (0, 0), initial_state)
+            g_tracker[items[0]] = 0
             queue.append(node)
-            visited.append(node)
 
     while len(queue) > 0:
         current = min(queue, key=lambda x: x.f)
         queue.remove(current)
 
-        neighbours = current.get_neighbours(by_direction=True)
+        neighbours = current.get_neighbours()
 
-        for (dr, dq) in neighbours.keys():
+        for (r, q, dr, dq) in neighbours.keys():
+            # Check if the node is the best so far (g_tracker)
+            # tentative_g = current.g + 1
+            # if tentative_g >= g_tracker[(r, q)]:
+            #     continue
+
+            # Check if the node is already in the queue
+            if (r, q) in queue:
+                continue
+
             # Grab the state of the prior node
             new_state = current.state.copy()
 
             # Modify it to reflect the new node(s)
             del new_state[current.coord]
 
-            to_remove = []
+            # Calculate and update k
+            k = 1
+            if (r, q) in new_state.keys():
+                k = new_state[(r, q)][1] + 1
 
-            for (r, q) in neighbours[(dr, dq)]:
-                # Calculate and update k
-                k = 1
-                if (r, q) in new_state.keys():
-                    k = new_state[(r, q)][1] + 1
+            # If the k > 6 then the node dissapears, and we don't track it
+            if k > 6:
+                continue
 
-                # Check if k greater than max power, if not add to the state
-                if k > 6:
-                    to_remove.append((r, q))
-                else:
-                    new_state[(r, q)] = ('r', k)
+            new_state[(r, q)] = ('r', k)
 
-            neighbours[(dr, dq)] = list(filter(lambda x: x not in to_remove, neighbours[(dr, dq)]))
+            # Calculate heuristic with the prior state
+            heuristic = h((r, q), k, current.state)
 
-            nodes_to_add = []
+            # Create new node
+            new_node = Node((r, q), current, current.g + 1, heuristic, k, (dr, dq), new_state)
 
-            for (r, q) in neighbours[(dr, dq)]:
-                k = new_state[(r, q)][1]
-
-                # Calculate heuristic with the prior state
-                heuristic = h((r, q), k, current.state)
-
-                # Create new node
-                new_node = Node((r, q), current, current.g + 1, heuristic, k, (dr, dq), new_state)
-                nodes_to_add.append(new_node)
+            # Update g_tracker
+            g_tracker[(r, q)] = new_node.g
 
             # Check if goal state
             if is_goal_state(new_state):
-                actions = paint_board(nodes_to_add[0], new_state)
+                actions = paint_board(new_node, new_state)
                 return list(map(lambda x: x.to_tuple(), actions))
 
-            queue.extend(nodes_to_add)
-            visited.extend(nodes_to_add)
+            # Add to queue
+            queue.append(new_node)
 
 input = {(5, 3): ('r', 3), (1, 3): ('b', 3), (2, 0): ('b', 6), (6, 0): ('r', 2), (6, 4): ('b', 5), (0, 1): ('r', 1), (2, 3): ('b', 6), (6, 2): ('b', 5)}
 print(A_star(input))
-
-# input = {(5, 6): ('r', 2), (1, 0): ('b', 2), (1, 1): ('b', 1), (3, 2): ('b', 1), (1, 3): ('b', 3)}
-#
-# start = time.time()
-# A_star(input)
-# end = time.time()
-#
-#
-#
-# print(end - start)
