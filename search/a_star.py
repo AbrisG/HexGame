@@ -1,82 +1,11 @@
 import time
 from Node import Node
-from Action import Action
+from HeuristicCalc import h, get_blue_nodes
 from utils import render_board
-
-
-def get_blue_nodes(state, coords_only=False):
-    blue_nodes = list(filter(lambda x: x[1][0] == 'b', state.items()))
-    if coords_only:
-        return list(map(lambda x: x[0], blue_nodes))
-    else:
-        return blue_nodes
 
 
 def is_goal_state(state):
     return len(get_blue_nodes(state)) == 0
-
-
-def axial_distance(a, b):
-    return (abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[0] + a[1] - b[0] - b[1])) / 2
-
-
-def uniform_cost(a, b):
-    return 1
-
-
-def get_wraparound_nodes(blue_nodes):
-    # Account for the wraparound
-    all_blue_nodes = []
-    for blue_node in blue_nodes:
-        all_blue_nodes.append(blue_node)
-        wraparound_coordinates = [
-            (blue_node[0], blue_node[1] + 7),
-            (blue_node[0] - 7, blue_node[1] + 7),
-            (blue_node[0] - 7, blue_node[1]),
-            (blue_node[0], blue_node[1] - 7),
-            (blue_node[0] + 7, blue_node[1] - 7),
-            (blue_node[0] + 7, blue_node[1])
-        ]
-        all_blue_nodes.extend(wraparound_coordinates)
-
-    return all_blue_nodes
-
-
-def h(coord, k, state, distance_f=axial_distance) -> int:
-    # Get blue nodes
-    blue_nodes = get_blue_nodes(state, coords_only=True)
-
-    # Account for the wraparound
-    all_blue_nodes = get_wraparound_nodes(blue_nodes)
-
-    # Calculate the distance to all blue nodes
-    distances = list(map(lambda bn: max(distance_f(coord, bn) - k + 1, 0), all_blue_nodes))
-
-    # Return the lowest distance
-    return min(distances)
-
-
-def path_to_actions(path):
-    actions = []
-    for i in range(len(path) - 1):
-        actions.append(
-            Action(path[i].coord[0], path[i].coord[1], path[i + 1].offset[0], path[i + 1].offset[1], path[i].k))
-    return actions
-
-
-def paint_board(node, state):
-    # Get the path
-    path = []
-    while node is not None:
-        path.append(node)
-        node = node.parent
-    path.reverse()
-
-    actions = path_to_actions(path)
-
-    print(render_board(state, True))
-
-    return actions
 
 
 def A_star(initial_state):
@@ -97,7 +26,7 @@ def A_star(initial_state):
         current = min(queue, key=lambda x: x.f)
         queue.remove(current)
 
-        neighbours = current.get_neighbours(by_direction=True)
+        neighbours = current.get_neighbours()
 
         for (dr, dq) in neighbours.keys():
             # Grab the state of the prior node
@@ -144,8 +73,6 @@ def A_star(initial_state):
 
 
 if __name__ == '__main__':
-    print(get_wraparound_nodes([(0, 0)]))
-    print(axial_distance((0,0), (6,6)))
     input_dict = {(5, 6): ('r', 2), (1, 0): ('b', 2), (1, 1): ('b', 1), (3, 2): ('b', 1), (1, 3): ('b', 3)}
 
     start = time.time()

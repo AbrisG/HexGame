@@ -5,6 +5,7 @@ class Action:
         self.dr = dr
         self.dq = dq
         self.k = k
+
     def __str__(self):
         return f"Action: {self.r, self.q}, {self.dr, self.dq}, k: {self.k}"
 

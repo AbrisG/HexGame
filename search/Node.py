@@ -18,20 +18,13 @@ class Node:
         (1, 0)  # up-right
     ]
 
-    def get_neighbours(self, by_direction=False):
-        if by_direction:
-            # Grab all the neighbours according to the offsets and the power (k)
-            neighbours = {key: [] for key in Node.dr_dq}
-            for i in range(1, self.k + 1):
-                for (dr, dq) in Node.dr_dq:
-                    neighbours[(dr, dq)].append(((self.coord[0] + dr * i) % 7, (self.coord[1] + dq * i) % 7))
-            return neighbours
-        else:
-            neighbours = []
-            for i in range(1, self.k + 1):
-                for (dr, dq) in Node.dr_dq:
-                    neighbours.append(((self.coord[0] + dr * i) % 7, (self.coord[1] + dq * i) % 7, dr, dq))
-            return neighbours
+    def get_neighbours(self):
+        # Grab all the neighbours according to the offsets and the power (k)
+        neighbours = {key: [] for key in Node.dr_dq}
+        for i in range(1, self.k + 1):
+            for (dr, dq) in Node.dr_dq:
+                neighbours[(dr, dq)].append(((self.coord[0] + dr * i) % 7, (self.coord[1] + dq * i) % 7))
+        return neighbours
 
     def __eq__(self, other):
         if not isinstance(other, Node):
