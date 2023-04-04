@@ -1,14 +1,16 @@
 from Action import Action
 from utils import render_board
+from timeout_decorator import timeout
 
 
 class NodeBFS:
-    def __init__(self, coord, parent, k, state, offset):
+    def __init__(self, coord, parent, k, state, offset, visited):
         self.coord = coord
         self.parent = parent
         self.state = state
         self.k = k
         self.offset = offset
+        self.visited = visited
 
     dr_dq = [
         (0, 1),  # down-right
@@ -87,26 +89,33 @@ def get_blue_nodes(state):
 def is_goal_state(state):
     return len(get_blue_nodes(state)) == 0
 
-
+@timeout(30)
 def BFS(inp):
     inp = inp.copy()
+    print(render_board(inp, True))
+    #master = inp.copy()
 
     queue = []
-    visited = []
+
     for key in inp.keys():
         if inp[key][0] == 'r':
-            node = NodeBFS(key, None, inp[key][1], inp, (0, 0))
+            node = NodeBFS(key, None, inp[key][1], inp, (0, 0), [key])
             queue.append(node)
-            visited.append(node.coord)
 
     while len(queue) > 0:
         current = queue.pop(0)
-        root = current
-        while root.parent is not None:
-            root = root.parent
 
-        print(root)
-        print(render_board(current.state, True))
+        #master.update(current.state)
+
+        #root = current
+        #while root.parent is not None:
+           # root = root.parent
+
+        #if current.parent is not None:
+            #master[current.parent.coord] = ('g', current.parent.k)
+
+        #print(root)
+        #print(render_board(master, True))
 
 
         # Check if goal state
@@ -131,19 +140,28 @@ def BFS(inp):
                 if (r, q) in new_state.keys():
                     k = new_state[(r, q)][1] + 1
 
-                if k > 6 or (r, q) in visited:
+                if k > 6:
+                    del new_state[(r, q)]
+                    continue
+
+                if (r, q) in current.visited:
                     continue
 
                 new_state[(r, q)] = ('r', k)
                 nodes_to_check.append((r, q))
 
+            node_visited = current.visited.copy()
+            node_visited.extend(nodes_to_check)
+
             for (r, q) in nodes_to_check:
-                new_node = NodeBFS((r, q), current, new_state[(r, q)][1], new_state, (dr, dq))
+                new_node = NodeBFS((r, q), current, new_state[(r, q)][1], new_state, (dr, dq), node_visited)
                 queue.append(new_node)
-                visited.append(new_node.coord)
+
+        #if current.parent is not None:
+         #   master[current.parent.coord] = ('r', current.parent.k)
 
 
 if __name__ == '__main__':
-    input_dict = {(3,1) : ('b', 1), (0,3) : ('b', 1), (3,4) : ('r',1)}
+    input_dict = {(3,1) : ('r', 4), (0,4) : ('b', 6), (5,6) : ('b',1)}
 
-    BFS(input_dict)
+    print(BFS(input_dict))
