@@ -16,6 +16,7 @@ from program import search
 # the final action sequence and any other output that may be printed to stdout.
 # Regardless, you must not print anything to stdout in your *final* submission.
 
+
 def parse_input(input: str) -> dict[tuple, tuple]:
     """
     Parse input CSV into a dictionary of board cell states.
@@ -28,6 +29,7 @@ def parse_input(input: str) -> dict[tuple, tuple]:
         ]
     }
 
+
 def print_sequence(sequence: list[tuple]):
     """
     Print the given action sequence. All actions are prepended with the 
@@ -35,6 +37,7 @@ def print_sequence(sequence: list[tuple]):
     """
     for r, q, dr, dq in sequence:
         print(f"SPREAD {r} {q} {dr} {dq}")
+
 
 def main():
     """
@@ -45,6 +48,7 @@ def main():
     sequence: list[tuple] = search(input)
     print(sequence)
     print_sequence(sequence)
+
 
 if __name__ == "__main__":
     main()

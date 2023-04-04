@@ -1,9 +1,7 @@
 import time
-
 from Node import Node
 from Action import Action
 from utils import render_board
-from timeout_decorator import timeout
 
 
 def get_blue_nodes(state, coords_only=False):
@@ -80,8 +78,8 @@ def paint_board(node, state):
 
     return actions
 
-@timeout(120)
-def A_star(initial_state, w_filters=False):
+
+def A_star(initial_state):
     initial_state = initial_state.copy()
 
     print(render_board(initial_state, True))
@@ -144,15 +142,15 @@ def A_star(initial_state, w_filters=False):
             queue.extend(nodes_to_add)
             visited.extend(nodes_to_add)
 
-input = {(5, 3): ('r', 3), (1, 3): ('b', 3), (2, 0): ('b', 6), (6, 0): ('r', 2), (6, 4): ('b', 5), (0, 1): ('r', 1), (2, 3): ('b', 6), (6, 2): ('b', 5)}
-print(A_star(input))
 
-# input = {(5, 6): ('r', 2), (1, 0): ('b', 2), (1, 1): ('b', 1), (3, 2): ('b', 1), (1, 3): ('b', 3)}
-#
-# start = time.time()
-# A_star(input)
-# end = time.time()
-#
-#
-#
-# print(end - start)
+if __name__ == '__main__':
+    print(get_wraparound_nodes([(0, 0)]))
+    print(axial_distance((0,0), (6,6)))
+    input_dict = {(5, 6): ('r', 2), (1, 0): ('b', 2), (1, 1): ('b', 1), (3, 2): ('b', 1), (1, 3): ('b', 3)}
+
+    start = time.time()
+    output = A_star(input_dict)
+    end = time.time()
+
+    print("Time taken: ", end - start)
+    print("Output: ", output)

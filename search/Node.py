@@ -20,7 +20,7 @@ class Node:
 
     def get_neighbours(self, by_direction=False):
         if by_direction:
-        # Grab all the neighbours according to the offsets and the power (k)
+            # Grab all the neighbours according to the offsets and the power (k)
             neighbours = {key: [] for key in Node.dr_dq}
             for i in range(1, self.k + 1):
                 for (dr, dq) in Node.dr_dq:

@@ -34,23 +34,16 @@ def generate_tile(colour, coord_set):
         return coord, ('r', random.randint(1, 6))
     elif colour == 'b':
         # Generate a random blue tile
-        return coord, ('b', random.randint(1, 6))
+        return coord, ('b', random.randint(1, 1))
     else:
         # Generate random tile
         return coord, ('r', random.randint(1, 6)) if random.random() < 0.5 else ('b', random.randint(1, 6))
 
 
-tests = generate_tests(2)
-for test in tests:
-    print(render_board(test, ansi=True))
-
-    try:
-        # Time the algorithms
-        A_star_start_time = time.time()
-        A_star_result = A_star(test)
-        A_star_end_time = time.time()
-
-        print("A* result: " + str(A_star_result))
+if __name__ == '__main__':
+    tests = generate_tests(5)
+    for test in tests:
+        print(render_board(test, ansi=True))
 
         BFS_start_time = time.time()
         BFS_result = BFS(test)
@@ -59,12 +52,3 @@ for test in tests:
         print("BFS result: " + str(BFS_result))
 
         print("BFS took " + str(BFS_end_time - BFS_start_time) + " seconds")
-        print("A* took " + str(A_star_end_time - A_star_start_time) + " seconds")
-
-        # Check if the algorithms return the same result
-        if len(BFS_result) != len(A_star_result):
-            raise Exception("The algorithms returned different results")
-    except Exception as e:
-        print(e)
-        print(test)
-        break

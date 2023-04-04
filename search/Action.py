@@ -1,6 +1,3 @@
-import self as self
-
-
 class Action:
     def __init__(self, r, q, dr, dq, k):
         self.r = r

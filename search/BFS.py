@@ -1,6 +1,5 @@
 from Action import Action
 from utils import render_board
-from timeout_decorator import timeout
 
 
 class NodeBFS:
@@ -27,6 +26,14 @@ class NodeBFS:
             for (dr, dq) in NodeBFS.dr_dq:
                 neighbours[(dr, dq)].append(((self.coord[0] + dr * i) % 7, (self.coord[1] + dq * i) % 7))
         return neighbours
+
+    def __eq__(self, other):
+        if not isinstance(other, NodeBFS):
+            return False
+        return self.coord == other.coord
+
+    def __str__(self):
+        return str(self.coord) + " " + str(self.k) + " " + str(self.offset) + " " + str(self.parent)
 
 
 def generate_path(node):
@@ -69,20 +76,6 @@ def paint_board(node, inp):
     return actions
 
 
-def get_start(inp):
-    queue = []
-    visited = []
-    blue_nodes = []
-    for key, value in inp.items():
-        if value[0] == 'r':
-            node = NodeBFS(key, None, value[1], inp, (0, 0))
-            queue.append(node)
-            visited.append(key)
-        else:
-            blue_nodes.append(key)
-    return queue, visited, blue_nodes
-
-
 def get_blue_nodes(state):
     blue_nodes = []
     for key, value in state.items():
@@ -95,7 +88,6 @@ def is_goal_state(state):
     return len(get_blue_nodes(state)) == 0
 
 
-@timeout(30)
 def BFS(inp):
     inp = inp.copy()
 
@@ -105,10 +97,22 @@ def BFS(inp):
         if inp[key][0] == 'r':
             node = NodeBFS(key, None, inp[key][1], inp, (0, 0))
             queue.append(node)
-            visited.append(visited)
+            visited.append(node.coord)
 
     while len(queue) > 0:
         current = queue.pop(0)
+        root = current
+        while root.parent is not None:
+            root = root.parent
+
+        print(root)
+        print(render_board(current.state, True))
+
+
+        # Check if goal state
+        if is_goal_state(current.state):
+            actions = paint_board(current, inp)
+            return list(map(lambda x: x.to_tuple(), actions))
 
         neighbours = current.get_neighbours()
 
@@ -120,30 +124,26 @@ def BFS(inp):
             # Modify it to reflect the new node(s)
             del new_state[current.coord]
 
+            nodes_to_check = []
             for (r, q) in neighbours[(dr, dq)]:
-
                 # Calculate and update k
                 k = 1
                 if (r, q) in new_state.keys():
                     k = new_state[(r, q)][1] + 1
 
+                if k > 6 or (r, q) in visited:
+                    continue
+
                 new_state[(r, q)] = ('r', k)
+                nodes_to_check.append((r, q))
 
-            nodes_to_add = []
-
-            for (r, q) in neighbours[(dr, dq)]:
-                # Create new node
+            for (r, q) in nodes_to_check:
                 new_node = NodeBFS((r, q), current, new_state[(r, q)][1], new_state, (dr, dq))
+                queue.append(new_node)
+                visited.append(new_node.coord)
 
-                if new_node in visited:
-                    nodes_to_add = []
-                    break
-                nodes_to_add.append(new_node)
 
-            # Check if goal state
-            if is_goal_state(new_state):
-                actions = paint_board(nodes_to_add[0], inp)
-                return list(map(lambda x: x.to_tuple(), actions))
+if __name__ == '__main__':
+    input_dict = {(3,1) : ('b', 1), (0,3) : ('b', 1), (3,4) : ('r',1)}
 
-            queue.extend(nodes_to_add)
-            visited.extend(nodes_to_add)
+    BFS(input_dict)
